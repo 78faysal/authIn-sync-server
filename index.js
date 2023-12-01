@@ -52,7 +52,7 @@ async function run() {
     
     app.get('/product/:id', async(req, res) => {
         const id = req.params.id;
-        const quary = { _id: new ObjectId(id) }
+        const quary = await { _id: new ObjectId(id) }
         const result = await productsCollection.findOne(quary);
         res.send(result);
     })
@@ -63,6 +63,34 @@ async function run() {
         res.send(result);
     })
 
+    app.get('/cartProducts/:id', async(req, res) => {
+        const id = req.params.id;
+        const quary = {_id: new ObjectId(id)}
+        const result = await cartCollection.findOne(quary);
+        console.log(result);
+        res.send(result)
+    })
+
+
+    app.put('/cartProducts/:id', async(req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id)}
+        const options = { upsert: true };
+        const updatedCart = req.body;
+        const cart = {
+            $set: {
+                name:updatedCart.name,
+                brand:updatedCart.brand,
+                category:updatedCart.category,
+                rating:updatedCart.rating,
+                description:updatedCart.description,
+                photo:updatedCart.photo
+            }
+        }
+
+        const result = await cartCollection.updateOne(filter, cart, options);
+        res.send(result);
+    })
 
     app.post('/products', async(req, res) => {
         const quary = req.body;
@@ -79,8 +107,9 @@ async function run() {
 
     app.delete('/cartProducts/:id', async(req, res) => {
         const id = req.params.id;
-        const quary = { _id: new ObjectId(id)}
+        const quary = await { _id: new ObjectId(id)}
         const result = await cartCollection.deleteOne(quary);
+        // console.log(result);
         res.send(result);
     })
 
