@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -27,9 +27,62 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
+    client.connect();
 
     const productsCollection = client.db('AutoInSync').collection('products');
+    const cartCollection = client.db('AutoInSync').collection('cartProducts');
+
+
+    app.get('/products', async(req, res) => {
+        const cursor = await productsCollection.find();
+        const result = await cursor.toArray();
+        // console.log(result);
+        res.send(result);
+    })
+
+    app.get('/products/:brand', async(req, res) => {
+        const brand = req.params.brand;
+        const quary = { brand: brand }
+        const cursor = await productsCollection.find(quary);
+        const result = await cursor.toArray();
+        // console.log(result);
+        res.send(result);
+    })
+    
+    app.get('/product/:id', async(req, res) => {
+        const id = req.params.id;
+        const quary = { _id: new ObjectId(id) }
+        const result = await productsCollection.findOne(quary);
+        res.send(result);
+    })
+
+    app.get('/cartProducts', async(req, res) => {
+        const cursor = await cartCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
+
+    app.post('/products', async(req, res) => {
+        const quary = req.body;
+        const result = await productsCollection.insertOne(quary);
+        res.send(result)
+    })
+
+    app.post('/cartProducts', async(req, res) => {
+        const quary = req.body;
+        const result = await cartCollection.insertOne(quary);
+        res.send(result);
+    })
+
+
+    app.delete('/cartProducts/:id', async(req, res) => {
+        const id = req.params.id;
+        const quary = { _id: new ObjectId(id)}
+        const result = await cartCollection.deleteOne(quary);
+        res.send(result);
+    })
 
 
 
@@ -38,7 +91,7 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
