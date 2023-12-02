@@ -67,7 +67,7 @@ async function run() {
         const id = req.params.id;
         const quary = {_id: new ObjectId(id)}
         const result = await cartCollection.findOne(quary);
-        console.log(result);
+        // console.log(result);
         res.send(result)
     })
 
